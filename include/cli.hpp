@@ -1,21 +1,15 @@
 #pragma once
 
-#include <optional>
-
-enum ProjectType
-{
-    C,
-    CPP,
-};
+#include "project_generator.hpp"
 
 class CliArgs
 {
-    std::optional<ProjectType> type_;
+    Option<ProjectType> type_;
 
 public:
     explicit CliArgs(int, char *argv[]);
 
     constexpr void print_usage();
 
-    std::optional<ProjectType> project_type() const noexcept;
+    Option<ProjectType> project_type() const noexcept;
 };

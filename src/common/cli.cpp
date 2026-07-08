@@ -12,11 +12,11 @@ CliArgs::CliArgs(int, char *argv[])
 
     if (name == "newc")
     {
-        type_ = C;
+        type_ = ProjectType::C;
     }
     else if (name == "newcpp")
     {
-        type_ = CPP;
+        type_ = ProjectType::CPP;
     }
     else
     {
@@ -24,7 +24,7 @@ CliArgs::CliArgs(int, char *argv[])
     }
 }
 
-std::optional<ProjectType> CliArgs::project_type() const noexcept
+Option<ProjectType> CliArgs::project_type() const noexcept
 {
     return type_;
 }
