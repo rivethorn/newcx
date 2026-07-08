@@ -19,8 +19,5 @@ add_library(newcx_core
 
 target_include_directories(newcx_core PUBLIC include)
 
-add_executable(newc src/newc/main.cpp)
-target_link_libraries(newc PRIVATE newcx_core)
-
-add_executable(newcpp src/newcpp/main.cpp)
-target_link_libraries(newcpp PRIVATE newcx_core)
+add_executable(newcx src/main.cpp)
+target_link_libraries(newcx PRIVATE newcx_core)
