@@ -1,6 +1,7 @@
 #include <print>
 
 #include "cli.hpp"
+#include "config.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -18,6 +19,8 @@ int main(int argc, char *argv[])
     {
         std::println("no type");
     }
+
+    AppConfig conf = AppConfig();
 
     return 0;
 }
