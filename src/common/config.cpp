@@ -1,8 +1,9 @@
+#include <expected>
 #include <filesystem>
 #include <fstream>
 #include <ios>
 #include <iostream>
-#include <string_view>
+#include <string>
 #include <utility>
 
 #include "config.hpp"
@@ -11,22 +12,28 @@
 
 namespace fs = std::filesystem;
 
-AppConfig::AppConfig()
+[[nodiscard]] AppConfig::AppConfig()
 {
     if (!fs::exists(config_path_))
     {
         std::ofstream f(config_path_, std::ios::out);
-        // TODO: Handle Error
+        if (!f)
+        {
+            std::println(std::cerr, "{}", to_string(NewcxError::IoFailure));
+            std::exit(1);
+        }
         f << default_config;
+        f.close();
     }
 
-    parse_config();
-
-    std::println("{}", static_cast<int>(c_std));
-    std::println("{}", static_cast<int>(cxx_std));
+    if (auto r = parse_config(); !r)
+    {
+        std::println(std::cerr, "{}", to_string(r.error()));
+        std::exit(1);
+    }
 }
 
-void AppConfig::parse_config()
+[[nodiscard]] Result<void> AppConfig::parse_config()
 {
     auto config = toml::parse_file(config_path_.string());
 
@@ -42,6 +49,8 @@ void AppConfig::parse_config()
     case 23:
         this->c_std = std::move(static_cast<C_Standard>(c_std));
         break;
+    default:
+        return std::unexpected(NewcxError::InvalidConfig);
     }
 
     switch (cxx_std)
@@ -55,5 +64,9 @@ void AppConfig::parse_config()
     case 26:
         this->cxx_std = static_cast<CXX_Standard>(cxx_std);
         break;
+    default:
+        return std::unexpected(NewcxError::InvalidConfig);
     }
+
+    return {};
 }

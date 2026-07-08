@@ -12,7 +12,7 @@ class AppConfig
     fs::path config_path_ =
         fs::path(fs::path(std::getenv("HOME")) / ".newcx.toml");
 
-    void parse_config();
+    Result<void> parse_config();
 
 public:
     C_Standard c_std;
