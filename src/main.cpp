@@ -1,6 +1,6 @@
-#include "cli.hpp"
-
 #include <print>
+
+#include "cli.hpp"
 
 int main(int argc, char *argv[])
 {

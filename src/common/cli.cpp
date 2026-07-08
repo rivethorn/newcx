@@ -1,7 +1,7 @@
-#include "cli.hpp"
-
 #include <filesystem>
 #include <print>
+
+#include "cli.hpp"
 
 namespace fs = std::filesystem;
 
