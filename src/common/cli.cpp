@@ -3,6 +3,7 @@
 #include <iostream>
 #include <print>
 #include <string_view>
+#include <utility>
 
 #include "cli.hpp"
 
