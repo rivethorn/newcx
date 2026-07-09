@@ -73,3 +73,15 @@ enum class CXX_Standard
     CXX23 = 23,
     CXX26 = 26,
 };
+
+namespace C_Generator
+{
+[[nodiscard]] Result<void> scaffold_project(std::string_view project_name,
+                                            std::string_view std_version);
+}
+
+namespace CXX_Generator
+{
+[[nodiscard]] Result<void> scaffold_project(std::string_view project_name,
+                                            std::string_view std_version);
+}
