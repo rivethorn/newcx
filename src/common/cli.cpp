@@ -2,8 +2,7 @@
 #include <iostream>
 #include <string_view>
 
-#include "cli.hpp"
-#include "project_generator.hpp"
+#include "Cli.hpp"
 
 namespace fs = std::filesystem;
 

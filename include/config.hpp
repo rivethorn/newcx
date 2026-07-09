@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <string>
 
-#include "project_generator.hpp"
+#include "ProjectGenerator.hpp"
 
 namespace fs = std::filesystem;
 

@@ -3,7 +3,7 @@
 #include <ostream>
 #include <string>
 
-#include "project_generator.hpp"
+#include "ProjectGenerator.hpp"
 
 class Cli
 {

@@ -6,9 +6,8 @@
 #include <string>
 #include <utility>
 
-#include "config.hpp"
-#include "project_generator.hpp"
-#include "toml.hpp"
+#include "Config.hpp"
+#include "TOML.hpp"
 
 namespace fs = std::filesystem;
 

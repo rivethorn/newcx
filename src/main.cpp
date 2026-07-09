@@ -1,8 +1,7 @@
 #include <print>
 
-#include "cli.hpp"
-#include "config.hpp"
-#include "project_generator.hpp"
+#include "Cli.hpp"
+#include "Config.hpp"
 
 int main(int argc, char *argv[])
 {
