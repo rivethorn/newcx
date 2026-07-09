@@ -16,10 +16,12 @@ namespace fs = std::filesystem;
     std::string out;
     out.reserve(project_name.size());
 
-    std::ranges::transform(
-        project_name, std::back_inserter(out), [](unsigned char c) -> char {
-            return std::isalnum(c) ? static_cast<char>(std::toupper(c)) : '_';
-        });
+    std::transform(project_name.begin(), project_name.end(),
+                   std::back_inserter(out), [](unsigned char c) -> char {
+                       return std::isalnum(c)
+                                  ? static_cast<char>(std::toupper(c))
+                                  : '_';
+                   });
     return out;
 }
 
