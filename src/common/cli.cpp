@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <filesystem>
 #include <iostream>
 #include <string_view>
@@ -78,6 +79,30 @@ Cli::Cli(int argc, char *argv[])
         std::exit(0);
     }
 
+    if (first_arg == "--edit-config")
+    {
+        auto editor = std::getenv("EDITOR");
+        if (!editor)
+        {
+            editor = std::getenv("VISUAL");
+        }
+        if (!editor)
+        {
+            std::println("No default editor found.\nMake sure to set $EDITOR");
+            std::exit(1);
+        }
+
+        fs::path config_path =
+            fs::path(fs::path(std::getenv("HOME")) / ".newcx.toml");
+
+        auto command =
+            std::string(editor) + " \"" + config_path.string() + "\"";
+
+        auto return_code = std::system(command.c_str());
+
+        std::exit(return_code);
+    }
+
     handle_project_type();
 
     switch (exe_type_)
@@ -137,30 +162,25 @@ void Cli::handle_project_type()
 
 void Cli::print_usage_to(std::ostream &os, std::string_view exe)
 {
-    if (exe == "newcx")
+    if (exe == "newc")
     {
         std::println(
-            os, "newcx - create a new C/CPP project, quickly\n"
-                "Usage:\n"
-                "    newcx -c <project-name>     Create a new C project\n"
-                "    newcx -cpp <project-name>   Create a new CPP project\n"
-                "    newcx -v, --version         Show app version");
-    }
-    else if (exe == "newc")
-    {
-        std::println(os,
-                     "newc - create a new C project, quickly\n"
-                     "Usage:\n"
-                     "    newc <project-name>        Create a new C project\n"
-                     "    newc -v, --version         Show app version");
+            os,
+            "newc - create a new C project, quickly\n"
+            "Usage:\n"
+            "    newc <project-name>       Create a new C project\n"
+            "    newc --edit-config        Open the config file in $EDITOR\n"
+            "    newc -v, --version        Show app version");
     }
     else if (exe == "newcpp")
     {
         std::println(
-            os, "newcpp - create a new CPP project, quickly\n"
-                "Usage:\n"
-                "    newcpp <project-name>        Create a new CPP project\n"
-                "    newcpp -v, --version         Show app version");
+            os,
+            "newcpp - create a new CPP project, quickly\n"
+            "Usage:\n"
+            "    newcpp <project-name>      Create a new CPP project\n"
+            "    newcpp --edit-config       Open the config file in $EDITOR\n"
+            "    newcpp -v, --version       Show app version");
     }
 }
 
