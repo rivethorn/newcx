@@ -1,22 +1,33 @@
-# .github/workflows/release.yml
 name: Release
 
 on:
   push:
     tags:
-      - "v*" # Triggers on tags like v1.0.0, v2.3.1, etc.
+      - "v*"
 
 permissions:
-  contents: write # Required for creating releases and uploading assets
+  contents: write
 
 jobs:
   build:
+    name: Build ${{ matrix.asset_suffix }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-26.04, macos-15] # Linux x86_64 + macOS arm64 (Apple Silicon)
-        # Add macos-13 if you also want Intel macOS support
+        include:
+          - os: ubuntu-24.04
+            asset_suffix: linux-x86_64
+            cxx: g++-14
+          - os: macos-15
+            asset_suffix: darwin-arm64
+            cxx: clang++
+          - os: macos-15-intel
+            asset_suffix: darwin-x86_64
+            cxx: clang++
 
     runs-on: ${{ matrix.os }}
+    env:
+      CMAKE_BUILD_TYPE: Release
 
     steps:
       - name: Checkout code
@@ -28,21 +39,48 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake ninja-build
+          sudo apt-get install -y g++-14 cmake ninja-build
 
       - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
           brew install cmake ninja
 
+      - name: Show toolchain
+        run: |
+          uname -a
+          cmake --version
+          ninja --version
+          "${{ matrix.cxx }}" --version
+
+      - name: Verify required C++ standard library headers
+        shell: bash
+        run: |
+          cat > /tmp/newcx-cxx23-probe.cpp <<'EOF'
+          #include <expected>
+          #include <format>
+          #include <print>
+          #include <ranges>
+
+          int main() {
+              std::expected<int, int> result = 1;
+              auto view = std::views::iota(0, 1);
+              std::println("{}", std::format("{}", *view.begin() + result.value()));
+          }
+          EOF
+          "${{ matrix.cxx }}" -std=c++23 /tmp/newcx-cxx23-probe.cpp -o /tmp/newcx-cxx23-probe
+          /tmp/newcx-cxx23-probe
+
       - name: Configure CMake
         run: |
           cmake -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=/usr/local
+            -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
+            -DCMAKE_CXX_COMPILER="${{ matrix.cxx }}" \
+            -DCMAKE_INSTALL_PREFIX=/usr/local \
+            -DCMAKE_VERBOSE_MAKEFILE=ON
 
       - name: Build
-        run: cmake --build build --config Release -j$(nproc || sysctl -n hw.nproc)
+        run: cmake --build build --config "${CMAKE_BUILD_TYPE}" --parallel
 
       - name: Install (stage)
         run: cmake --install build --prefix ./staging
@@ -53,18 +91,21 @@ jobs:
           VERSION=${GITHUB_REF_NAME#v}
 
           mkdir -p artifacts
-          if [[ "$RUNNER_OS" == "Linux" ]]; then
-            cp ./staging/bin/$EXEC_NAME artifacts/${EXEC_NAME}-${VERSION}-linux-x86_64
-            chmod +x artifacts/${EXEC_NAME}-${VERSION}-linux-x86_64
-          elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            cp ./staging/bin/$EXEC_NAME artifacts/${EXEC_NAME}-${VERSION}-darwin-arm64
-            chmod +x artifacts/${EXEC_NAME}-${VERSION}-darwin-arm64
-          fi
+          cp "./staging/bin/${EXEC_NAME}" "artifacts/${EXEC_NAME}-v${VERSION}-${{ matrix.asset_suffix }}"
+          chmod +x "artifacts/${EXEC_NAME}-v${VERSION}-${{ matrix.asset_suffix }}"
+
+      - name: Smoke test packaged binary
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          SMOKE_DIR="$(mktemp -d)"
+          cp "./artifacts/newcx-v${VERSION}-${{ matrix.asset_suffix }}" "${SMOKE_DIR}/newcx"
+          "${SMOKE_DIR}/newcx" link
+          "${SMOKE_DIR}/newc" --version
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}-binary
+          name: newcx-${{ matrix.asset_suffix }}
           path: artifacts/*
           if-no-files-found: error
 
