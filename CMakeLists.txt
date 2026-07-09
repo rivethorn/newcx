@@ -22,3 +22,19 @@ target_include_directories(newcx_core PUBLIC include)
 
 add_executable(newcx src/main.cpp)
 target_link_libraries(newcx PRIVATE newcx_core)
+
+install(TARGETS newcx DESTINATION bin)
+
+install(CODE [[
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -E create_symlink
+            newcx
+            $ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/newc
+    )
+
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -E create_symlink
+            newcx
+            $ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/newcpp
+    )
+]])
