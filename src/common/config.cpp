@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "config.hpp"
+#include "project_generator.hpp"
 #include "toml.hpp"
 
 namespace fs = std::filesystem;
@@ -46,7 +47,7 @@ namespace fs = std::filesystem;
     case 11:
     case 17:
     case 23:
-        this->c_std = std::move(static_cast<C_Standard>(c_std));
+        this->c_std_ = std::move(static_cast<C_Standard>(c_std));
         break;
     default:
         return std::unexpected(NewcxError::InvalidConfig);
@@ -61,11 +62,53 @@ namespace fs = std::filesystem;
     case 20:
     case 23:
     case 26:
-        this->cxx_std = static_cast<CXX_Standard>(cxx_std);
+        this->cxx_std_ = static_cast<CXX_Standard>(cxx_std);
         break;
     default:
         return std::unexpected(NewcxError::InvalidConfig);
     }
 
     return {};
+}
+
+[[nodiscard]] std::string_view AppConfig::c_std() const noexcept
+{
+    switch (c_std_)
+    {
+    case C_Standard::C90:
+        return "90";
+    case C_Standard::C99:
+        return "99";
+    case C_Standard::C11:
+        return "11";
+    case C_Standard::C17:
+        return "17";
+    case C_Standard::C23:
+        return "23";
+    default:
+        std::unreachable();
+    }
+}
+
+[[nodiscard]] std::string_view AppConfig::cxx_std() const noexcept
+{
+    switch (cxx_std_)
+    {
+    case CXX_Standard::CXX98:
+        return "98";
+    case CXX_Standard::CXX11:
+        return "11";
+    case CXX_Standard::CXX14:
+        return "14";
+    case CXX_Standard::CXX17:
+        return "17";
+    case CXX_Standard::CXX20:
+        return "20";
+    case CXX_Standard::CXX23:
+        return "23";
+    case CXX_Standard::CXX26:
+        return "26";
+    default:
+        std::unreachable();
+    }
 }

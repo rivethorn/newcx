@@ -9,6 +9,9 @@ inline constexpr std::size_t MAX_NAME_LEN = 256;
 
 enum class NewcxError
 {
+    InvalidName,
+    NameTooLong,
+    AlreadyExists,
     InvalidConfig,
     IoFailure,
 };
@@ -17,6 +20,12 @@ enum class NewcxError
 {
     switch (err)
     {
+    case NewcxError::InvalidName:
+        return "project name must be non-empty";
+    case NewcxError::NameTooLong:
+        return "project name is too long";
+    case NewcxError::AlreadyExists:
+        return "path already exists";
     case NewcxError::InvalidConfig:
         return "invalid configuration file";
     case NewcxError::IoFailure:
