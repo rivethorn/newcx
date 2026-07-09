@@ -4,6 +4,8 @@
 #include <optional>
 #include <string_view>
 
+inline constexpr std::string_view APP_VERSION = "1.0.0";
+
 enum class NewcxError
 {
     InvalidConfig,
@@ -24,6 +26,27 @@ enum class NewcxError
 
 template <typename T> using Option = std::optional<T>;
 template <typename T> using Result = std::expected<T, NewcxError>;
+
+enum class ExeType
+{
+    newcx,
+    newc,
+    newcpp,
+};
+
+[[nodiscard]] constexpr std::string_view to_string(ExeType exe)
+{
+    switch (exe)
+    {
+    case ExeType::newc:
+        return "newc";
+    case ExeType::newcpp:
+        return "newcpp";
+    case ExeType::newcx:
+        return "newcx";
+    }
+    return "unknown";
+}
 
 enum class ProjectType
 {

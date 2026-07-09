@@ -2,14 +2,17 @@
 
 #include "project_generator.hpp"
 
-class CliArgs
+class Cli
 {
-    Option<ProjectType> type_;
+    ProjectType project_type_;
+    ExeType exe_type_;
+
+    void handle_main_exe(int argc, char *argv[]);
+
+    constexpr void print_version(std::string_view);
 
 public:
-    explicit CliArgs(int, char *argv[]);
+    explicit Cli(int, char *argv[]);
 
-    constexpr void print_usage();
-
-    Option<ProjectType> project_type() const noexcept;
+    ProjectType project_type() const noexcept;
 };
