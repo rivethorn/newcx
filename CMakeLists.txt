@@ -14,8 +14,11 @@ set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-fsanitize=address,undefined")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
 add_library(newcx_core
-    src/common/Cli.cpp
-    src/common/Config.cpp
+    src/common/cli.cpp
+    src/common/config.cpp
+    src/common/files.cpp
+    src/generators/c_generator.cpp
+    src/generators/cxx_generator.cpp
 )
 
 target_include_directories(newcx_core PUBLIC include)
