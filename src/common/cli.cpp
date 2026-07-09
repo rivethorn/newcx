@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
+#include <print>
 #include <string_view>
 
 #include "cli.hpp"
