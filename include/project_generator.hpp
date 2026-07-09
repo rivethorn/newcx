@@ -5,6 +5,7 @@
 #include <string_view>
 
 inline constexpr std::string_view APP_VERSION = "1.0.0";
+inline constexpr std::size_t MAX_NAME_LEN = 256;
 
 enum class NewcxError
 {
@@ -51,7 +52,7 @@ enum class ExeType
 enum class ProjectType
 {
     C,
-    CPP,
+    CXX,
 };
 
 enum class C_Standard

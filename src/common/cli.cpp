@@ -153,7 +153,7 @@ void Cli::handle_project_type()
         project_type_ = ProjectType::C;
         break;
     case ExeType::newcpp:
-        project_type_ = ProjectType::CPP;
+        project_type_ = ProjectType::CXX;
         break;
     case ExeType::newcx:
         std::unreachable();

@@ -9,16 +9,18 @@ namespace fs = std::filesystem;
 
 class AppConfig
 {
+    C_Standard c_std_;
+    CXX_Standard cxx_std_;
+
     fs::path config_path_ =
         fs::path(fs::path(std::getenv("HOME")) / ".newcx.toml");
 
     Result<void> parse_config();
 
 public:
-    C_Standard c_std;
-    CXX_Standard cxx_std;
-
     AppConfig();
+    std::string_view c_std() const noexcept;
+    std::string_view cxx_std() const noexcept;
 };
 
 const std::string default_config = R"(c-standard = "11"
