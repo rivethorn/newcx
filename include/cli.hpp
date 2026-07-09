@@ -3,7 +3,7 @@
 #include <ostream>
 #include <string>
 
-#include "ProjectGenerator.hpp"
+#include "project_generator.hpp"
 
 class Cli
 {
@@ -12,8 +12,7 @@ class Cli
     std::string project_name_;
 
     void handle_exe_type(char *argv[]);
-    void handle_newcx_project_type(std::string_view first_arg);
-    void handle_project_type(std::string_view first_arg);
+    void handle_project_type();
     void print_version(std::string_view exe);
     void print_usage_to(std::ostream &os, std::string_view exe);
 

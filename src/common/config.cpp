@@ -6,8 +6,8 @@
 #include <string>
 #include <utility>
 
-#include "Config.hpp"
-#include "TOML.hpp"
+#include "config.hpp"
+#include "toml.hpp"
 
 namespace fs = std::filesystem;
 

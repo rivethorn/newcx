@@ -1,7 +1,7 @@
 #include <print>
 
-#include "Cli.hpp"
-#include "Config.hpp"
+#include "cli.hpp"
+#include "config.hpp"
 
 int main(int argc, char *argv[])
 {

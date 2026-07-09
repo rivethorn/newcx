@@ -2,21 +2,69 @@
 #include <iostream>
 #include <string_view>
 
-#include "Cli.hpp"
+#include "cli.hpp"
 
 namespace fs = std::filesystem;
+
+static void create_links(std::string_view exe)
+{
+    fs::path self = fs::canonical(exe);
+
+    fs::path newc = self.parent_path() / "newc";
+    fs::path newcpp = self.parent_path() / "newcpp";
+
+    if (!fs::exists(newc))
+    {
+        fs::create_symlink(self.filename(), newc);
+    }
+
+    if (!fs::exists(newcpp))
+    {
+        fs::create_symlink(self.filename(), newcpp);
+    }
+
+    std::println("You can now use newc and newcpp");
+}
+
+static void handle_main_exe_call(int argc, char *argv[])
+{
+    if (argc != 2)
+    {
+        std::println(
+            std::cerr,
+            "Please invoke this programs as either:\n\tnewc\n\tnewcpp\n\nYou "
+            "can run the link command to create the symlinks");
+        std::exit(1);
+    }
+
+    std::string_view exe = argv[0];
+    std::string_view cmd = argv[1];
+
+    if (cmd == "link")
+    {
+        create_links(exe);
+        std::exit(0);
+    }
+    else
+    {
+        std::println(
+            std::cerr,
+            "Please invoke this programs as either:\n\tnewc\n\tnewcpp\n\nYou "
+            "can run the link command to create the symlinks");
+        std::exit(1);
+    }
+}
 
 Cli::Cli(int argc, char *argv[])
 {
     handle_exe_type(argv);
 
-    if (exe_type_ == ExeType::newcx && (argc == 1 || argc > 3))
+    if (exe_type_ == ExeType::newcx)
     {
-        print_usage_to(std::cerr, to_string(exe_type_));
-        std::exit(1);
+        handle_main_exe_call(argc, argv);
     }
 
-    if (exe_type_ != ExeType::newcx && (argc == 1 || argc > 2))
+    if (argc == 1 || argc > 2)
     {
         print_usage_to(std::cerr, to_string(exe_type_));
         std::exit(1);
@@ -30,7 +78,7 @@ Cli::Cli(int argc, char *argv[])
         std::exit(0);
     }
 
-    handle_project_type(first_arg);
+    handle_project_type();
 
     switch (exe_type_)
     {
@@ -39,13 +87,7 @@ Cli::Cli(int argc, char *argv[])
         project_name_ = argv[1];
         break;
     case ExeType::newcx:
-        if (argc == 2)
-        {
-            print_usage_to(std::cerr, to_string(exe_type_));
-            std::exit(1);
-        }
-        project_name_ = argv[2];
-        break;
+        std::unreachable();
     }
 }
 
@@ -78,24 +120,7 @@ void Cli::handle_exe_type(char *argv[])
     }
 }
 
-void Cli::handle_newcx_project_type(std::string_view first_arg)
-{
-    if (first_arg == "-c")
-    {
-        project_type_ = ProjectType::C;
-    }
-    else if (first_arg == "-cpp")
-    {
-        project_type_ = ProjectType::CPP;
-    }
-    else
-    {
-        print_usage_to(std::cerr, to_string(exe_type_));
-        std::exit(1);
-    }
-}
-
-void Cli::handle_project_type(std::string_view first_arg)
+void Cli::handle_project_type()
 {
     switch (exe_type_)
     {
@@ -106,8 +131,7 @@ void Cli::handle_project_type(std::string_view first_arg)
         project_type_ = ProjectType::CPP;
         break;
     case ExeType::newcx:
-        handle_newcx_project_type(first_arg);
-        break;
+        std::unreachable();
     }
 }
 
@@ -142,7 +166,7 @@ void Cli::print_usage_to(std::ostream &os, std::string_view exe)
 
 void Cli::print_version(std::string_view exe)
 {
-    std::println("{} - scaffold a new C/CPP project, quickly\n"
+    std::println("{} - create a new C/CPP project, quickly\n"
                  "version {}",
                  exe, APP_VERSION);
 }
