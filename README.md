@@ -56,8 +56,8 @@ c-standard = "11"
 cpp-standard = "11"
 ```
 
-> > [!NOTE]
-> Both are set to 11 by default.
+> [!NOTE]
+Both are set to 11 by default.
 
 ## Build from source
 
