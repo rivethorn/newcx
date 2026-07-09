@@ -43,6 +43,8 @@ make
 ./out/my-cool-app
 ```
 
+If for some reason you don't have symlinks, you can use `newcx link` to create them.
+
 ## Configuration
 
 The app uses a simple TOML file at `~/.newcx.toml`, which will be created on first launch.
