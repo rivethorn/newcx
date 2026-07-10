@@ -4,7 +4,7 @@
 #include <optional>
 #include <string_view>
 
-inline constexpr std::string_view APP_VERSION = "1.1.1";
+inline constexpr std::string_view APP_VERSION = "1.2.0";
 inline constexpr std::size_t MAX_NAME_LEN = 256;
 
 enum class NewcxError
