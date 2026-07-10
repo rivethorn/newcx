@@ -79,7 +79,7 @@ jobs:
           cmake --version
           ninja --version
           if [[ "${RUNNER_OS}" == "Windows" ]]; then
-            cl
+            cl 2>&1 || true
           else
             "${{ matrix.cxx }}" --version
           fi
@@ -103,7 +103,7 @@ jobs:
 
           if [[ "${RUNNER_OS}" == "Windows" ]]; then
             PROBE_EXE="${RUNNER_TEMP}/newcx-cxx23-probe.exe"
-            cl /nologo /EHsc /std:c++latest "${PROBE_CPP}" /Fe:"${PROBE_EXE}"
+            cl -nologo -EHsc -std:c++latest "${PROBE_CPP}" -Fe:"${PROBE_EXE}"
             "${PROBE_EXE}"
           else
             PROBE_EXE="${RUNNER_TEMP}/newcx-cxx23-probe"
