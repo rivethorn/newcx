@@ -109,8 +109,12 @@ Cli::Cli(int argc, char *argv[])
 #ifdef _WIN32
         if (!editor)
         {
-            const char *default_editor = "notepad";
-            editor = default_editor;
+            editor = const_cast<char *>("notepad");
+        }
+#else
+        if (!editor)
+        {
+            editor = const_cast<char *>("nano");
         }
 #endif
         if (!editor)
