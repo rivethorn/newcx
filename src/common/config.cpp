@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <expected>
 #include <filesystem>
 #include <fstream>
@@ -7,13 +8,19 @@
 #include <utility>
 
 #include "config.hpp"
+#include "files.hpp"
 #include "project_generator.hpp"
 #include "toml.hpp"
 
 namespace fs = std::filesystem;
 
-[[nodiscard]] AppConfig::AppConfig()
+[[nodiscard]] AppConfig::AppConfig() : config_path_(config_path())
 {
+    if (auto parent = config_path_.parent_path(); !parent.empty())
+    {
+        fs::create_directories(parent);
+    }
+
     if (!fs::exists(config_path_))
     {
         std::ofstream f(config_path_, std::ios::out);

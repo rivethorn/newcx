@@ -1,11 +1,14 @@
+#include <cctype>
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
 #include <print>
+#include <string>
 #include <string_view>
 #include <utility>
 
 #include "cli.hpp"
+#include "files.hpp"
 
 namespace fs = std::filesystem;
 
@@ -13,6 +16,20 @@ static void create_links(std::string_view exe)
 {
     fs::path self = fs::canonical(exe);
 
+#ifdef _WIN32
+    fs::path newc = self.parent_path() / "newc.exe";
+    fs::path newcpp = self.parent_path() / "newcpp.exe";
+
+    if (!fs::exists(newc))
+    {
+        fs::copy_file(self, newc);
+    }
+
+    if (!fs::exists(newcpp))
+    {
+        fs::copy_file(self, newcpp);
+    }
+#else
     fs::path newc = self.parent_path() / "newc";
     fs::path newcpp = self.parent_path() / "newcpp";
 
@@ -25,6 +42,7 @@ static void create_links(std::string_view exe)
     {
         fs::create_symlink(self.filename(), newcpp);
     }
+#endif
 
     std::println("You can now use newc and newcpp");
 }
@@ -88,17 +106,21 @@ Cli::Cli(int argc, char *argv[])
         {
             editor = std::getenv("VISUAL");
         }
+#ifdef _WIN32
+        if (!editor)
+        {
+            editor = "notepad";
+        }
+#endif
         if (!editor)
         {
             std::println("No default editor found.\nMake sure to set $EDITOR");
             std::exit(1);
         }
 
-        fs::path config_path =
-            fs::path(fs::path(std::getenv("HOME")) / ".newcx.toml");
+        fs::path config = config_path();
 
-        auto command =
-            std::string(editor) + " \"" + config_path.string() + "\"";
+        auto command = std::string(editor) + " \"" + config.string() + "\"";
 
         auto return_code = std::system(command.c_str());
 
@@ -131,7 +153,12 @@ Cli::Cli(int argc, char *argv[])
 void Cli::handle_exe_type(char *argv[])
 {
     fs::path exe = argv[0];
-    auto name = exe.filename().string();
+    auto name = exe.stem().string();
+
+    for (auto &ch : name)
+    {
+        ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+    }
 
     if (name == "newc")
     {

@@ -29,16 +29,32 @@ target_link_libraries(newcx PRIVATE newcx_core)
 
 install(TARGETS newcx DESTINATION bin)
 
-install(CODE [[
-    execute_process(
-        COMMAND ${CMAKE_COMMAND} -E create_symlink
-            newcx
-            $ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/newc
-    )
+if(WIN32)
+    install(CODE [[
+        execute_process(
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/newcx.exe
+                $ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/newc.exe
+        )
 
-    execute_process(
-        COMMAND ${CMAKE_COMMAND} -E create_symlink
-            newcx
-            $ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/newcpp
-    )
-]])
+        execute_process(
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/newcx.exe
+                $ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/newcpp.exe
+        )
+    ]])
+else()
+    install(CODE [[
+        execute_process(
+            COMMAND ${CMAKE_COMMAND} -E create_symlink
+                newcx
+                $ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/newc
+        )
+
+        execute_process(
+            COMMAND ${CMAKE_COMMAND} -E create_symlink
+                newcx
+                $ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/newcpp
+        )
+    ]])
+endif()

@@ -17,13 +17,20 @@ jobs:
         include:
           - os: ubuntu-24.04
             asset_suffix: linux-x86_64
+            artifact_extension: ""
             cxx: g++-14
           - os: macos-15
             asset_suffix: darwin-arm64
+            artifact_extension: ""
             cxx: clang++
           - os: macos-15-intel
             asset_suffix: darwin-x86_64
+            artifact_extension: ""
             cxx: clang++
+          - os: windows-2025
+            asset_suffix: windows-x86_64
+            artifact_extension: ".exe"
+            cxx: cl
 
     runs-on: ${{ matrix.os }}
     env:
@@ -34,6 +41,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Set up MSVC
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
 
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
@@ -46,17 +57,38 @@ jobs:
         run: |
           brew install cmake ninja
 
+      - name: Install dependencies (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          if (-not (Get-Command cmake -ErrorAction SilentlyContinue)) {
+            choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y --no-progress
+          }
+
+          if (-not (Get-Command ninja -ErrorAction SilentlyContinue)) {
+            choco install ninja -y --no-progress
+          }
+
+          "C:\Program Files\CMake\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
+          "C:\ProgramData\chocolatey\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
+
       - name: Show toolchain
+        shell: bash
         run: |
           uname -a
           cmake --version
           ninja --version
-          "${{ matrix.cxx }}" --version
+          if [[ "${RUNNER_OS}" == "Windows" ]]; then
+            cl
+          else
+            "${{ matrix.cxx }}" --version
+          fi
 
       - name: Verify required C++ standard library headers
         shell: bash
         run: |
-          cat > /tmp/newcx-cxx23-probe.cpp <<'EOF'
+          PROBE_CPP="${RUNNER_TEMP}/newcx-cxx23-probe.cpp"
+          cat > "${PROBE_CPP}" <<'EOF'
           #include <expected>
           #include <format>
           #include <print>
@@ -68,10 +100,19 @@ jobs:
               std::println("{}", std::format("{}", *view.begin() + result.value()));
           }
           EOF
-          "${{ matrix.cxx }}" -std=c++23 /tmp/newcx-cxx23-probe.cpp -o /tmp/newcx-cxx23-probe
-          /tmp/newcx-cxx23-probe
+
+          if [[ "${RUNNER_OS}" == "Windows" ]]; then
+            PROBE_EXE="${RUNNER_TEMP}/newcx-cxx23-probe.exe"
+            cl /nologo /EHsc /std:c++latest "${PROBE_CPP}" /Fe:"${PROBE_EXE}"
+            "${PROBE_EXE}"
+          else
+            PROBE_EXE="${RUNNER_TEMP}/newcx-cxx23-probe"
+            "${{ matrix.cxx }}" -std=c++23 "${PROBE_CPP}" -o "${PROBE_EXE}"
+            "${PROBE_EXE}"
+          fi
 
       - name: Configure CMake
+        shell: bash
         run: |
           cmake -B build -G Ninja \
             -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
@@ -80,27 +121,34 @@ jobs:
             -DCMAKE_VERBOSE_MAKEFILE=ON
 
       - name: Build
+        shell: bash
         run: cmake --build build --config "${CMAKE_BUILD_TYPE}" --parallel
 
       - name: Install (stage)
+        shell: bash
         run: cmake --install build --prefix ./staging
 
       - name: Package binary
+        shell: bash
         run: |
           EXEC_NAME="newcx"
           VERSION=${GITHUB_REF_NAME#v}
+          ARTIFACT="${EXEC_NAME}-v${VERSION}-${{ matrix.asset_suffix }}${{ matrix.artifact_extension }}"
 
           mkdir -p artifacts
-          cp "./staging/bin/${EXEC_NAME}" "artifacts/${EXEC_NAME}-v${VERSION}-${{ matrix.asset_suffix }}"
-          chmod +x "artifacts/${EXEC_NAME}-v${VERSION}-${{ matrix.asset_suffix }}"
+          cp "./staging/bin/${EXEC_NAME}${{ matrix.artifact_extension }}" "artifacts/${ARTIFACT}"
+          chmod +x "artifacts/${ARTIFACT}"
 
       - name: Smoke test packaged binary
+        shell: bash
         run: |
           VERSION=${GITHUB_REF_NAME#v}
+          ARTIFACT="newcx-v${VERSION}-${{ matrix.asset_suffix }}${{ matrix.artifact_extension }}"
+          EXEC_SUFFIX="${{ matrix.artifact_extension }}"
           SMOKE_DIR="$(mktemp -d)"
-          cp "./artifacts/newcx-v${VERSION}-${{ matrix.asset_suffix }}" "${SMOKE_DIR}/newcx"
-          "${SMOKE_DIR}/newcx" link
-          "${SMOKE_DIR}/newc" --version
+          cp "./artifacts/${ARTIFACT}" "${SMOKE_DIR}/newcx${EXEC_SUFFIX}"
+          "${SMOKE_DIR}/newcx${EXEC_SUFFIX}" link
+          "${SMOKE_DIR}/newc${EXEC_SUFFIX}" --version
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

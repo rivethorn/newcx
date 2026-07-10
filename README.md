@@ -9,13 +9,21 @@ juggling or boilerplate typing.
 
 ## Install
 
-You can use the `install.sh` script to install `newcx` on your system:
+You can use the installer script to install `newcx` on your system.
+
+Linux and macOS:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/rivethorn/newcx/main/install.sh | bash
 ```
 
-This will download and install `newcx` on your system and create symlinks to `newc` and `newcpp`, which can be used to generate C and CPP projects, respectively.
+Windows PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/rivethorn/newcx/main/install.ps1 | iex
+```
+
+This will download and install `newcx` and create `newc` and `newcpp` launchers, which can be used to generate C and CPP projects, respectively.
 
 ## Usage
 
